@@ -219,7 +219,7 @@ Lý do từng mức ghi theo cost-of-error.
 
 **Với tool cần người duyệt (`dang_FAQ`)**
 - **Ai duyệt:** TA.
-- **Người duyệt thấy gì:** đúng nội dung cả lớp sẽ đọc, các phiếu gốc và mã mục. Với bản đính chính tài liệu, phải tích ô "Giảng viên đã xác nhận đính chính này" thì nút "Đăng cho cả lớp" mới bấm được.
+- **Người duyệt thấy gì:** đúng nội dung cả lớp sẽ đọc, các phiếu gốc và mã mục. Màn TA chia ba cột: nhóm phiếu, nội dung phiếu, bản nháp FAQ. TA đọc phiếu gốc ngay cạnh bản nháp mình sắp duyệt, không phải cuộn qua lại. Với bản đính chính tài liệu, phải tích ô "Giảng viên đã xác nhận đính chính này" thì nút "Đăng cho cả lớp" mới bấm được.
 - **Quá hạn thì sao:** bản nháp nằm yên trong hàng chờ, không có gì được đăng. Đây là hướng an toàn.
 
 **Tool khó xếp nhất: `goi_y_bai_tap` (bản gốc của track)**
