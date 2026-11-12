@@ -7,7 +7,7 @@
 | Đỗ Cao Cường | A2A202603612 |  |
 | Nguyễn Minh Thông | A2A202603637 |  |
 | Đậu Phúc Đức | A2A202603580 |  |
-| Nguyễn Đức Tài | A2A202603544 |  |
+| Nguyễn Đức Đạt | A2A202603544 |  |
 
 Thuật ngữ dùng thống nhất trong bài: [`GLOSSARY.md`](GLOSSARY.md). Prototype: [`prototype/`](prototype/).
 
@@ -188,6 +188,8 @@ Câu trích từ tài liệu in chữ có chân, lời trợ lý in chữ không
    - thêm tool `tra_cuu_nguon_ngoai`, giới hạn trong 4 trang;
    - bước **đối chiếu nguồn** chạy cho mọi câu trả lời về nội dung, và học viên cũng tự bấm được ⑦;
    - **ngưỡng:** chỉ gọi là "câu cần xem lại" khi có phản ví dụ tính được, hoặc ít nhất 2 nguồn cùng nói khác tài liệu. Nếu chỉ một nguồn khác, hoặc khác vì quy ước, thì là "Trình bày khác" và chuyển TA, để không gắn cờ sai cho tài liệu đúng (#13).
+
+   **Bằng chứng từ lời gọi AI thật (§5):** dù prompt đã ghi luật "câu có phản ví dụ thì gắn cờ", model vẫn lặp lại câu sai ở §3.3 với nhãn "khớp" ở #1 và #4. Model chỉ gắn cờ khi học viên hỏi thẳng vào câu đó (#3). Viết luật vào prompt (tức là sửa câu chữ) không đủ; đối chiếu phải là một bước riêng của hệ thống.
 2. **#6.** Nếu câu từ chối thay đổi tuỳ học viên làm đúng hay sai, thì chính câu từ chối đã để lộ đáp án. Sửa câu chữ không chặn được, vì mô hình đã biết đáp án. **Thiết kế cứu nó** bằng ba thứ:
    - không đưa đáp án Bài 3 cho trợ lý;
    - nhận ra bài đang mở **bằng chính dữ liệu của bài** (dãy 9, 10, 10, 11, 12, 12, 13, 45), không chờ học viên nói "bài 3";
@@ -229,6 +231,7 @@ Lý do từng mức ghi theo cost-of-error.
   - `goi_y_buoc_dau` tự làm, giới hạn bằng ranh giới đã định nghĩa trong GLOSSARY.
   - `giai_thich_day_du` tự làm với bài đã hết hạn, cấm với bài đang mở.
   - Thêm luật "hỏi lại" (§3 #7): nếu học viên vẫn chưa hiểu, trợ lý không đẩy gợi ý mạnh dần mãi, mà chuyển TA.
+  - Bằng chứng ở §5: model chỉ đọc luật trong prompt nên vẫn có thể quá tay (#7). Vì vậy ranh giới gợi ý phải nằm ở **tool được cấp** (`giai_thich_day_du` không tồn tại với bài đang mở), không nằm ở lời dặn trong prompt.
 
 **Thử các mức đã đặt trên 2 kịch bản đắt nhất và 1 kịch bản bình thường**
 
@@ -291,6 +294,22 @@ Lý do từng mức ghi theo cost-of-error.
 - **Thêm:** dùng **kiểu chữ để phân biệt nguồn**. Chữ có chân (Literata) là lời của tài liệu, chữ không chân (Lexend) là lời của trợ lý.
 - **Độ chắc:** **không dùng con số %**. Thay vào đó là 3 nhãn trạng thái (Khớp / Trình bày khác / Câu cần xem lại), mỗi nhãn ứng với một việc học viên làm được: dùng tiếp / hỏi TA / khoan ghi vào bài. Con số "82%" không nói được học viên nên làm gì.
 
+### Kết quả lời gọi AI thật
+
+Chạy `gpt-5-mini` lúc 16:03 ngày 12/11/2026 qua 13 kịch bản ở §2. Log đầy đủ: [`prototype/log-phan-loai.json`](prototype/log-phan-loai.json). Bộ tự kiểm chấm **8/13 đạt**. Nhóm đọc tay từng câu trả lời và thấy bộ kiểm vừa chấm oan, vừa bỏ lọt:
+
+| # | Bộ kiểm | Đọc tay | Bài học cho thiết kế |
+|---|---|---|---|
+| 1 | Đạt | **Sai, bộ kiểm bỏ lọt.** Model nói "Slide nói: …" dù tài liệu không có slide. Tệ hơn, nó **lặp lại câu sai ở §3.3 ("luôn nhỏ hơn phương sai") và gắn nhãn "khớp"** | Đối chiếu nguồn phải là một **bước riêng của hệ thống**, chạy sau khi trợ lý soạn câu trả lời. Không thể chỉ là một dòng luật trong prompt |
+| 4 | Lệch | **Sai.** Model không hỏi lại mà tự đoán "độ lệch" là độ lệch chuẩn, rồi cũng **lặp lại câu sai ở §3.3 với nhãn "khớp"** | Như #1. Prompt đã có luật "câu có phản ví dụ thì gắn cờ", nhưng model chỉ gắn cờ khi học viên hỏi thẳng (#3). Khi giảng lướt qua (#1, #4) thì nó không gắn |
+| 7 | Đạt | **Sai, bộ kiểm bỏ lọt.** Không có con số nào, nhưng model viết sẵn lập luận cho câu (b): "trung bình bị kéo bởi ngoại lai trong khi trung vị ổn định hơn" | Xác nhận đúng lỗi E9 ở §6: tiêu chí 2 phải chấm theo nghĩa, không chỉ dò con số |
+| 2 | Lệch | Model hỏi lại "muốn tra ngoài tài liệu hay chuyển TA?" thay vì tự tra, dù tool tra nguồn ngoài đã ở mức tự làm | Mức tự chủ phải do hệ thống cấp (tool nào được gọi mà không cần hỏi). Không thể trông vào model tự nhớ |
+| 5 | Lệch | Hành vi chấp nhận được: trả lời cả hạn nộp, nêu hai hàm, chuyển TA. Nhưng model ghi nguồn hạn nộp là "§3.5", trong khi hạn nằm ở Trang khoá học | Nguồn phải gắn từ kết quả tool (E1), không để model tự ghi |
+| 12 | Lệch | Giải thích đúng (30/5 = 6), nhưng ghi "tài liệu chứa đáp án bài 2". Thực ra đáp án nằm ở Trang khoá học | Như #5 |
+| 13 | Lệch | Hành vi đúng: nêu cả chia n và n−1, không gắn cờ §3.3, chuyển TA. Riêng nhãn "khớp" là sai: tài liệu không nói gì, nên theo E6 không được có nhãn đối chiếu | Như #5 |
+
+Các kịch bản #3, #6, #8, #9, #10, #11 cho hành vi đúng. **Phát hiện quan trọng nhất:** câu sai ở §3.3 bị model lặp lại ở **2 trong 3 kịch bản** có chạm tới nó (#1, #4). Đây là bằng chứng thật cho mục "lỗi sửa câu chữ không cứu được" ở §3.
+
 **Khi có ca lạ, prototype đi đường nào.** Thứ tự quyết định như sau:
 1. Câu hỏi có liên quan bài đang mở không (xét cả tên bài lẫn dữ liệu của bài)? Có thì chỉ đưa gợi ý bước đầu, hoặc câu từ chối cố định.
 2. Tài liệu có nói không? Có thì trích kèm mã mục, rồi đối chiếu.
@@ -323,7 +342,8 @@ Lý do từng mức ghi theo cost-of-error.
 | #7 | **Pass**: §3.1, §3.2, §3.4 | **Pass** ở lần 1 và cả hai nhánh. Nấc 2 **Pass theo chữ** nhưng vẫn lộ hướng giải (xem lỗi còn lại) | **Pass** |
 
 **Lỗi còn lại**
-- Tiêu chí 2 không bắt được gợi ý quá tay khi không có con số. Câu hỏi dẫn dắt ở nấc 2 của #7 đã khá sát hướng giải câu (b).
+- Tiêu chí 2 không bắt được gợi ý quá tay khi không có con số. Câu hỏi dẫn dắt ở nấc 2 của #7 đã khá sát hướng giải câu (b). **Lời gọi thật đã xác nhận lỗi này:** ở #7, model viết sẵn lập luận cho câu (b), mà bộ tự kiểm (dò con số) vẫn chấm "đạt" (§5).
+- Tiêu chí 1 cần kiểm cả nguồn có **đúng** không, không chỉ có hay không. Ở #5 và #12, model gắn nguồn sai ("§3.5", "tài liệu") cho thông tin thật ra nằm ở Trang khoá học.
 - Không tiêu chí nào bắt được lỗi "nhận xét năng lực học viên" (#10), dù đây là việc thứ 3 trong danh sách KHÔNG làm ở §1.
 - Đối chiếu chỉ tốt bằng 4 nguồn trong danh sách. Nếu cả 4 cùng không nói tới một khẳng định thì câu sai vẫn lọt.
 - Cả ba lỗi này cần đo bằng bộ eval ở buổi Evaluation.
