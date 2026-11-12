@@ -1,13 +1,13 @@
-# Bài nộp LAB5 — T2 Giáo dục · Nhóm Cu Đơ
+# Bài nộp LAB5 — T2 Giáo dục · Lớp L3A · Bàn 5
 
 **Lớp:** L3A · **Bàn / zone:** 5 · **Track:** T2 Giáo dục
 
 | Họ và Tên | Mã Học Viên | Việc đã làm |
 |---|---|---|
-| Đỗ Cao Cường | A2A202603612 | Cả nhóm cùng dùng grill-with-docs để chốt thiết kế (§1–§6, GLOSSARY.md) và build prototype |
-| Nguyễn Minh Thông | A2A202603637 | Cả nhóm cùng dùng grill-with-docs để chốt thiết kế (§1–§6, GLOSSARY.md) và build prototype |
-| Đậu Phúc Đức | A2A202603580 | Cả nhóm cùng dùng grill-with-docs để chốt thiết kế (§1–§6, GLOSSARY.md) và build prototype |
-| Nguyễn Đức Đạt | A2A202603544 | Cả nhóm cùng dùng grill-with-docs để chốt thiết kế (§1–§6, GLOSSARY.md) và build prototype |
+| Đỗ Cao Cường | A2A202603612 |  |
+| Nguyễn Minh Thông | A2A202603637 |  |
+| Đậu Phúc Đức | A2A202603580 |  |
+| Nguyễn Đức Đạt | A2A202603544 |  |
 
 Thuật ngữ dùng thống nhất trong bài: [`GLOSSARY.md`](GLOSSARY.md). Prototype: [`prototype/`](prototype/).
 
