@@ -114,6 +114,7 @@ Câu trích từ tài liệu in chữ có chân, lời trợ lý in chữ không
 - **TA** nhận phiếu có nhãn "câu cần xem lại", gom chung một dòng theo mục, ví dụ "§3.3 · 12 học viên". Phiếu gửi ngoài giờ trực thì TA thấy từ 08:00 ngày 13/11.
 - TA chuyển cho **giảng viên**.
 - Giảng viên xác nhận xong, TA duyệt FAQ đính chính cho **cả lớp** (`dang_FAQ`, cần TA duyệt ⑥).
+- Đăng xong thì câu §3.3 trong tài liệu bị gạch và hiện bản đính chính ngay bên dưới. Trợ lý trả lời các câu hỏi sau bằng bản đính chính (xem quyết định ở §5).
 
 **Loại lỗi:** **lỗi hệ thống, nằm ở tầng nguồn.** Trợ lý trích đúng như thiết kế, nhưng nguồn thì sai.
 - **Cách nói:** không đổ cho học viên, không nói "tài liệu sai" chung chung. Chỉ rõ đúng một câu cần xem lại và giữ lại phần còn đúng.
@@ -264,8 +265,10 @@ Lý do từng mức ghi theo cost-of-error.
 - **File:** [`prototype/index.html`](prototype/index.html). Mở bằng trình duyệt, không cần cài gì.
 - **Công cụ:** một file HTML, dựng bằng coding agent (Claude).
 - **Phần mock:** mọi câu trả lời AI đều soạn sẵn theo §3. Dữ liệu dựng của track. Không backend, không đăng nhập.
-- **Lời gọi AI thật (bonus):** script riêng [`prototype/phan_loai.py`](prototype/phan_loai.py) gọi OpenAI để ra **quyết định chính** cho 13 tin nhắn ở §2: giảng kèm trích dẫn / hỏi lại / gợi ý bước đầu / tài liệu không có thì tra nguồn ngoài / chuyển TA, kèm tool và mã mục. Kết quả lưu ở `prototype/log-phan-loai.json`. Key đọc từ biến môi trường `OPENAI_API_KEY`, không nằm trong repo.
-- **Bấm qua được:** 4 tin mẫu (#3, #7, #2, #12), học viên tự đối chiếu một câu trong tài liệu, và tab **Hàng chờ TA** (phiếu gom theo mục, duyệt FAQ).
+- **Lời gọi AI thật (bonus):** script riêng [`prototype/phan_loai.py`](prototype/phan_loai.py) gọi OpenAI để ra **quyết định chính** cho 13 tin nhắn ở §2: giảng kèm trích dẫn / hỏi lại / gợi ý bước đầu / tài liệu không có thì tra nguồn ngoài / chuyển TA, kèm tool và mã mục. Bản v1 (chỉ có router) lưu ở `prototype/log-phan-loai.json`. Bản v2 (thêm bước hệ thống, xem cuối mục này) lưu mỗi lần chạy một file ở `prototype/log-v2/`. Key đọc từ biến môi trường `OPENAI_API_KEY`, không nằm trong repo.
+- **Bấm qua được:** đủ 13 tin mẫu, đánh số #1–#13 khớp bảng ở §2; học viên tự đối chiếu một câu trong tài liệu; và tab **Hàng chờ TA** (phiếu gom theo mục, duyệt FAQ). Đăng FAQ xong thì hàng chờ, tài liệu và trợ lý cùng đổi theo.
+- **Case đắt:** hai tin mẫu #3 và #7 mang nhãn đỏ "Case đắt". Số #1–#13 và nhãn này là chú thích cho demo, tắt cùng ô "Hiện số chú thích".
+- **Tin nào chuyển TA:** #2, #3, #5, #7 (khi hỏi lại), #9, #13. Ngoài ra #1 và #4 (nếu học viên chọn độ lệch chuẩn) có trích lướt qua câu sai ở §3.3, nên cũng gửi phiếu vào nhóm §3.3. Hai nhóm "Phương sai chia n hay n−1" (#13) và "Muốn hỏi trực tiếp TA" (#9) chỉ hiện trong hàng chờ khi tin mẫu tương ứng đã gửi phiếu.
 
 **Ảnh có đánh số:** [`prototype/screen-1-hoc-vien.png`](prototype/screen-1-hoc-vien.png) · [`prototype/screen-2-ta.png`](prototype/screen-2-ta.png). Trong prototype, bật ô "Hiện số chú thích" để thấy các số.
 
@@ -276,7 +279,7 @@ Lý do từng mức ghi theo cost-of-error.
 | ③ | Câu hỏi lại "(1) hay (2)" ở #7 | HAX G10 | `goi_y_buoc_dau`: tự làm, có giới hạn |
 | ④ | "Đang gửi cho TA…" rồi mới hiện "Đã gửi…", kèm nút **Rút lại** (rút lại thì số phiếu bên TA giảm) | — | `chuyen_TA`: tự làm, có hoàn tác |
 | ⑤ | Nút "Mình vẫn chưa hiểu" dẫn sang TA kèm phiếu | PAIR Errors + Graceful Failure | đường chuyển người |
-| ⑥ | Bên TA: nút "Duyệt và đăng" FAQ kèm hộp xác nhận; bản nháp về Bài 3 bị khoá, **không có nút đăng** | — | `dang_FAQ`: cần TA duyệt · cấm với bài đang mở |
+| ⑥ | Bên TA: nút "Duyệt và đăng" FAQ kèm hộp xác nhận; đăng xong thì nhóm §3.3 ra khỏi số phiếu chờ, tài liệu hiện bản đính chính; bản nháp về Bài 3 bị khoá, **không có nút đăng** | — | `dang_FAQ`: cần TA duyệt · cấm với bài đang mở |
 | ⑦ | Bấm một câu trong tài liệu → "Đối chiếu câu này" | PAIR Explainability & Trust | học viên tự kích hoạt đối chiếu |
 | ⑧ | "Báo sai chỗ nào" | HAX G15 | — |
 
@@ -293,6 +296,30 @@ Lý do từng mức ghi theo cost-of-error.
 - **Loại (3):** tin nhắn dài ra, và gạch ngang ngay trong câu trích dễ làm học viên lẫn câu nào là nguyên văn của tài liệu.
 - **Thêm:** dùng **kiểu chữ để phân biệt nguồn**. Chữ có chân (Literata) là lời của tài liệu, chữ không chân (Lexend) là lời của trợ lý.
 - **Độ chắc:** **không dùng con số %**. Thay vào đó là 3 nhãn trạng thái (Khớp / Trình bày khác / Câu cần xem lại), mỗi nhãn ứng với một việc học viên làm được: dùng tiếp / hỏi TA / khoan ghi vào bài. Con số "82%" không nói được học viên nên làm gì.
+
+**Quyết định: TA đăng đính chính xong thì cái gì đổi**
+- **Cân nhắc:**
+  - (1) chỉ đổi nút thành "Đã đăng";
+  - (2) đăng lên một trang FAQ riêng, tài liệu giữ nguyên;
+  - (3) sửa thẳng câu trong tài liệu, không để lại dấu vết;
+  - (4) một lần đăng đổi cùng lúc ba chỗ: hàng chờ TA, tài liệu, và câu trả lời của trợ lý.
+- **Chọn (4).** Cụ thể:
+  - *Hàng chờ TA:* nhóm §3.3 đổi nhãn đỏ "Câu cần xem lại" thành nhãn xanh "Đã đăng đính chính" và ghi "Đã trả lời 13 học viên bằng đính chính". Số trên tab không tính nhóm này nữa (18 → 5). Nhóm vẫn nằm trong danh sách, phiếu gốc vẫn mở được.
+  - *Tài liệu:* câu sai ở §3.3 bị gạch ngang nhưng vẫn đọc được. Bên cạnh có nhãn xanh "TA đã đính chính", ngay dưới là bản đính chính in chữ có chân, ghi "FAQ do TA đăng cho cả lớp".
+  - *Trợ lý:* học viên hỏi lại câu §3.3 thì trợ lý trả lời bằng bản đính chính và không tạo phiếu mới. Nếu dòng "Đã gửi câu §3.3 cho TA" vẫn còn trên màn hình thì nó đổi thành "TA đã đính chính câu này cho cả lớp", và nút Rút lại biến mất.
+- **Vì sao:**
+  - *Khép vòng #3.* Theo §3, nếu không ai làm gì thì câu §3.3 mang nhãn "Câu cần xem lại" mãi. Nhãn đó chỉ nói "khoan ghi", chưa nói "ghi gì". Bản đính chính đặt ngay dưới câu sai trả lời nốt phần còn thiếu.
+  - *Hai màu cho hai mức tin.* Nhãn đỏ nghĩa là trợ lý nghi ngờ, chưa ai xác nhận. Nhãn xanh nghĩa là giảng viên đã xác nhận và TA đã đăng. Học viên biết nên tin tới đâu (G11, PAIR Trust).
+  - *Gạch, không xoá.* Học viên đã chép câu cũ vào bài cần nhận ra đúng câu đó để sửa. Cách này cũng khớp luật 4 ở §4: không lặng lẽ thay lời tài liệu, khác nhau thì hiện cả hai.
+  - *Số trên tab là việc còn phải làm.* Nếu vẫn đếm 13 phiếu §3.3 thì TA sẽ mở lại từng phiếu cho một việc đã xong. Nhóm vẫn ở trong danh sách để TA xem lại phiếu gốc khi cần.
+  - *Không tạo phiếu thừa.* Câu đã có câu trả lời có thẩm quyền thì học viên hỏi sau nhận được ngay, không phải chờ tới ca TA, và TA không nhận thêm phiếu trùng.
+  - *Một nguồn chữ.* Chữ hiện ở tài liệu và trong chat lấy đúng từ bản nháp TA đọc trong hộp xác nhận. TA duyệt gì thì cả lớp thấy đúng cái đó, khớp §4: "người duyệt thấy đúng nội dung cả lớp sẽ đọc".
+- **Loại (1):** hàng chờ vẫn báo 13 phiếu chờ dù đã trả lời xong, còn học viên không thấy gì thay đổi.
+- **Loại (2):** đính chính nằm xa câu sai, học viên đọc §3.3 không biết đã có đính chính. Cùng lý do loại phương án (2) ở quyết định trên: căn cứ bị giấu sau một lần bấm.
+- **Loại (3):** sửa tài liệu gốc là việc của giảng viên, không nằm trong quyền của `dang_FAQ`. Xoá câu cũ thì người đã chép không biết mình cần sửa gì.
+- **Prototype chưa làm:**
+  - Gỡ bài đã đăng. Hộp xác nhận nói "Gỡ được" và §4 coi `dang_FAQ` là đảo được, nhưng prototype chưa có nút gỡ. Muốn làm lại thì tải lại trang.
+  - Báo riêng cho 13 học viên đã gửi phiếu §3.3. Hiện họ chỉ thấy đính chính khi mở lại tài liệu hoặc hỏi lại trợ lý.
 
 ### Kết quả lời gọi AI thật
 
@@ -317,6 +344,48 @@ Các kịch bản #3, #6, #8, #9, #10, #11 cho hành vi đúng. **Phát hiện q
    - buổi chưa học: chỉ nói tên buổi;
    - câu về công cụ hoặc khái niệm buổi đã học: tra nguồn ngoài, gắn nhãn.
 4. Khoá chưa quy định, không đủ căn cứ, hoặc học viên hỏi lại: chuyển TA.
+
+### Bản v2: thêm bước hệ thống rồi chạy lại
+
+Bảng trên cho thấy luật viết trong prompt chưa đủ. Nhóm làm theo đúng bài học đó: giữ router, thêm các bước do code chạy sau router, rồi chạy lại 13 kịch bản **4 lần**. Phải chạy nhiều lần vì model trả khác nhau mỗi lần: chạy lại đúng prompt v1 lúc 16:27 cho kết quả khác lần 16:03. Log: [`prototype/log-v2/`](prototype/log-v2/), mỗi lần chạy một file.
+
+**Đã thêm gì**
+
+| Thay đổi | Loại | Theo thiết kế nào |
+|---|---|---|
+| Bước **đối chiếu** là một lời gọi AI riêng, chạy trên câu trợ lý vừa soạn. Có phản ví dụ tính được thì hệ thống đổi nhãn thành "Câu cần xem lại" và thêm `chuyen_TA` | Hệ thống | §3, lỗi sửa câu chữ không cứu được (#3) |
+| **Câu từ chối cố định** do code gắn, model không tự viết | Hệ thống | §3 (#6), luật thêm 2 ở §4, tiêu chí 2 ở §6 |
+| Hệ thống **tự nhận ra bài đang mở** (tên bài, hoặc số 45 trong dữ liệu của bài) rồi báo cho router; router lỡ gọi `giai_thich_day_du` thì hệ thống gỡ | Hệ thống | luật thêm 1 ở §4 |
+| Sửa 2 lỗi trong prompt v1: dòng "KHÔNG giải bài" mâu thuẫn với luật "bài đã hết hạn được giải thích đầy đủ"; prompt chưa nói mã nguồn nào hợp lệ nên model tự đặt "Buổi 3" | Prompt | §2 (#5, #12), tiêu chí 1 ở §6 |
+| **Bộ kiểm** chặt hơn: bắt câu sai §3.3 bị lặp lại mà không gắn cờ, dò cụm từ lộ hướng giải câu (b), kiểm nguồn có tồn tại và đúng chỗ, bỏ chấm oan #2 và #13 | Bộ kiểm | bảng ở trên |
+
+Chấm lại log v1 lúc 16:03 bằng bộ kiểm mới: **7/13** (bộ kiểm cũ chấm 8/13 vì bỏ lọt #1, #4, #7).
+
+**Kết quả 4 lần chạy v2** (16:47, 16:57, 17:01, 17:12): bộ kiểm chấm **10, 10, 11, 10 trên 13**. Đọc tay:
+
+| # | Bộ kiểm | Đọc tay |
+|---|---|---|
+| 2, 3, 5, 6, 8, 13 | 4/4 | Đúng cả 4 lần. #5 nói đúng hạn 13/11 (bản v1 chạy lại có lần từ chối nói hạn vì coi là bài đang mở). #6 lần nào cũng đúng một câu từ chối |
+| 1 | 0/4 | Model không lần nào nói "tài liệu không có slide". Cả 4 lần model lặp lại câu sai ở §3.3, và **bước đối chiếu bắt được cả 4** |
+| 4 | 1/4 | 3 lần model tự đoán nghĩa thay vì hỏi lại. 2 lần nó lặp lại câu sai ở §3.3, đối chiếu bắt được cả 2 |
+| 12 | 1/4 | **Đúng cả 4 lần**: giải thích đủ (4+8+6+5+7)/5 = 6. Ba lần lệch chỉ vì model khai tên tool là `tra_cuu_tai_lieu` |
+| 7 | 4/4 | **Sai cả 4 lần, bộ kiểm bỏ lọt.** Không có con số, nhưng lần nào cũng dựng sẵn khung lập luận câu (b), ví dụ "giải thích vì sao chỉ số kia mô tả 'lương điển hình' tốt hơn dựa trên độ nhạy với ngoại lai" |
+| 9 | 4/4 | 3/4. Một lần model nói "chuyển bạn tới TA ngay" lúc 22:40, khi TA đã hết giờ (tiêu chí 3) |
+| 10 | 4/4 | Trả lời đúng cả 4 lần. Một lần **bước đối chiếu gắn cờ oan** (xem dưới) |
+| 11 | 3/4 | Lần 17:12 router từ chối thẳng thay vì trích §3.4: chặn thừa |
+
+**Bước đối chiếu cũng sai được.** Lần 16:57, nó tách riêng vế "trung vị là giá trị đứng giữa" ở #10 rồi lấy dãy có số giá trị chẵn làm "phản ví dụ", dù ngay vế sau câu trả lời đã nói trường hợp số chẵn. Đây đúng là rủi ro gắn cờ sai cho tài liệu đúng (#13). Nhóm thêm vào prompt đối chiếu một dòng: chấm cả câu cùng điều kiện đi kèm. Sau đó nhóm kiểm riêng bước đối chiếu trên 55 câu trả lời khác nhau trong log:
+- bắt 7/7 câu lặp lại "luôn nhỏ hơn phương sai";
+- gắn cờ thêm 2 câu nói "*thường* nhỏ hơn phương sai", là bản nói giảm của cùng câu sai, nên gắn cờ là đúng;
+- không gắn cờ oan câu nào khác.
+
+Riêng câu #10 bị gắn oan thì chạy lại 5 lần, cả prompt cũ lẫn prompt mới đều không gắn cờ. Vì vậy chưa chứng minh được dòng thêm này chữa được lỗi đó. Lần chạy 17:12 dùng prompt đã sửa.
+
+**Bài học từ v2**
+- **Bước hệ thống chặn đúng loại lỗi nó nhắm tới, và ổn định qua các lần chạy:** đối chiếu bắt 6/6 lần model lặp lại câu sai §3.3; câu từ chối giống nhau 4/4 lần. Đây là phần bản v1 không làm được bằng luật trong prompt.
+- **Phần còn để model tự quyết thì dao động:** hỏi lại (#4), nói "không có slide" (#1), không chặn thừa (#11). Cùng một tin, lần này đúng lần sau sai, nên một lần chạy không đủ làm bằng chứng.
+- **Lộ hướng giải (#7) chưa có bước hệ thống nào chặn.** Đây đúng là lỗi còn lại ở §6: dò cụm từ không bắt được, cần chấm theo nghĩa bằng bộ eval ở buổi Evaluation.
+- Báo "bài đang mở" cho router có thể đẩy nó sang chặn thừa (#11, lần 17:12). Mới gặp 1/4 lần, nhóm ghi lại để theo dõi.
 
 ---
 
@@ -352,11 +421,58 @@ Các kịch bản #3, #6, #8, #9, #10, #11 cho hành vi đúng. **Phát hiện q
 
 ## §7. Demo
 
-**Thứ tự demo**
-1. Lát cắt trong 30 giây.
-2. Bấm #3: tài liệu sai, đối chiếu, gửi TA, rồi rút lại.
-3. Bấm #7: hỏi (1)/(2), hỏi lại, phiếu gửi TA.
-4. Mở tab Hàng chờ TA: phiếu gom theo mục, duyệt FAQ, bản nháp Bài 3 bị khoá.
-5. Nhận ca lạ và trả lời theo thứ tự quyết định ở §5.
+**Chuẩn bị:** mở `prototype/index.html`, tải lại trang (prototype không lưu trạng thái), bật ô "Hiện số chú thích". Tab đang ghi **Hàng chờ TA (16)**.
+
+Các bước có 🔴 là **case đắt** (#3, #7 ở §2). Hai tin mẫu này có nhãn đỏ "Case đắt" trên prototype.
+
+**1. Lát cắt (30 giây)**
+- **Chỉ:** thanh "Bây giờ 22:40. TA trực lại lúc 08:00." và lời chào của trợ lý ①.
+- **Nói:** "22:40, học viên đang làm bài và không còn ai để hỏi. Trợ lý nói rõ mình là AI, dựa vào tài liệu buổi 1–3 và trang khoá học."
+
+**2. 🔴 Case đắt #3: tài liệu sai**
+- **Bấm:** tin mẫu "Độ lệch chuẩn luôn nhỏ hơn phương sai?".
+- **Thấy:** nhãn đỏ "Câu cần xem lại" ②. Câu §3.3 trong tài liệu bên trái được tô. Khung viền đứt chứa phản ví dụ 0,25 → 0,5 ①. Dòng "Đang gửi cho TA…" rồi mới tới "Đã gửi câu §3.3 cho TA" ④. Tab lên **(17)**.
+- **Nói:** "Câu này có trong tài liệu. Trợ lý trích đúng nguồn mà vẫn sai, nên trích dẫn thôi là chưa đủ. Trợ lý không xác nhận, đưa phản ví dụ tính được, và giữ lại phần định nghĩa còn đúng. Dòng 'đã gửi' chỉ hiện sau khi tool chạy xong."
+- **Bấm** nút §3.3 trong tin nhắn: tài liệu cuộn tới đúng câu sai. **Nói:** "Căn cứ nằm ngay trong tài liệu thật, không phải bản chép lại."
+- **Bấm** "Rút lại": tab về (16). **Bấm** "Gửi lại": tab lên (17). **Nói:** "Chuyển TA là tự làm, nhưng học viên rút lại được."
+
+**3. Học viên tự đối chiếu (tuỳ thời gian)**
+- **Bấm:** câu "Trung bình bị kéo mạnh bởi giá trị ngoại lai." ở §3.1, rồi bấm "Đối chiếu câu này" ⑦.
+- **Thấy:** "Đang đối chiếu…" rồi nhãn xanh "Khớp".
+- **Nói:** "Học viên tự kiểm được bất kỳ câu nào, không phải chờ trợ lý nghi ngờ trước."
+
+**4. 🔴 Case đắt #7: nhờ giải hộ câu b Bài 3**
+- **Bấm:** tin mẫu "Giải hộ câu b bài 3".
+- **Thấy:** nhãn "Bài đang mở: chỉ gợi ý bước đầu" ① và câu hỏi lại kèm hai nút (1)/(2) ③.
+- **Bấm** (2) "Mình tính xong rồi, nhưng chưa biết so hai con số thế nào": trợ lý trỏ §3.1, §3.2, §3.4, không đưa con số nào.
+- **Bấm** "Mình vẫn chưa hiểu" ⑤: một câu hỏi dẫn dắt, phiếu chuyển TA, dòng "Đã gửi phiếu cho TA". Tab lên **(18)**.
+- **Nói:** "Không có nút 'Xem lời giải' ở bất kỳ đâu, vì giải thích đầy đủ bị cấm với bài đang mở. Học viên hỏi lại thì trợ lý không đẩy gợi ý mạnh dần, mà chuyển sang người."
+
+**5. Hàng chờ TA**
+- **Bấm:** tab **Hàng chờ TA (18)**. **Nói:** "Giả sử giờ là 08:00 sáng 13/11, TA vào ca."
+- **Thấy:** 3 dòng theo mục: §3.3 · 13 học viên, Bài 3 câu b · 4 học viên, Hàm Excel · 1 học viên. Phiếu vừa gửi có dòng "Vừa gửi từ phiên học viên đang demo".
+- **Bấm** dòng "Bài 3 câu b": thấy phiếu từ bước 4, gồm câu hỏi gốc, những gì trợ lý đã nói và mục kẹt.
+- **Nói:** "TA không phải đọc 18 phiếu lẻ mà đọc 3 dòng. 13 người cùng vấp §3.3 là dấu hiệu chính tài liệu có vấn đề."
+
+**6. 🔴 Duyệt đính chính, khép vòng case #3**
+- **Bấm:** dòng §3.3, rồi "Duyệt và đăng" ⑥.
+- **Thấy:** hộp xác nhận hiện đúng nội dung cả lớp sẽ đọc. Nút "Đăng cho cả lớp" mờ cho tới khi tích "Giảng viên đã xác nhận đính chính này".
+- **Bấm:** tích ô, rồi "Đăng cho cả lớp".
+- **Thấy:** bản nháp ghi "Đã đăng cho cả lớp". Dòng §3.3 đổi sang nhãn xanh "Đã đăng đính chính", kèm "Đã trả lời 13 học viên bằng đính chính". Tab từ **(18) xuống (5)**.
+- **Nói:** "Đăng FAQ là việc duy nhất ở đây cần người duyệt, vì sai một lần là cả lớp học sai. Đăng xong thì hàng chờ chỉ còn việc thật sự chưa làm."
+- **Chỉ** bản nháp "Cách làm câu b Bài 3" 🔴 #7: không có nút đăng ⑥. **Nói:** "Việc bị cấm thì không có nút. Bản nháp này mở được sau khi Bài 3 hết hạn."
+
+**7. Học viên thấy gì sau khi TA đăng**
+- **Bấm:** tab Học viên.
+- **Thấy:** câu sai ở §3.3 bị gạch ngang, có nhãn xanh "TA đã đính chính" và bản đính chính ngay bên dưới.
+- **Bấm** lại tin mẫu #3: lần này trợ lý trả lời bằng bản đính chính, không gửi phiếu mới, tab vẫn **(5)**.
+- **Nói:** "Nhãn đỏ là trợ lý nghi ngờ, nhãn xanh là người có thẩm quyền đã xác nhận. Học viên hỏi sau không phải chờ tới ca TA nữa."
+
+**8. Nhận ca lạ** và trả lời theo thứ tự quyết định ở §5. Nếu ca lạ gần với một kịch bản ở §2, bấm tin mẫu cùng số (#1–#13) để cho thấy prototype xử lý thế nào.
+
+**Lưu ý khi demo**
+- Thanh giờ vẫn ghi 22:40 khi sang tab TA. Prototype không mô phỏng thời gian, nên nói miệng là sáng hôm sau.
+- Bấm một tin mẫu khác thì khung chat cũ bị xoá, nhưng phiếu đã gửi vẫn còn bên TA.
+- Đăng xong thì prototype không gỡ được. Muốn chạy lại thì tải lại trang.
 
 **Ca lạ nhận được ở demo:** *(điền sau demo: ca gì, prototype hoặc nhóm đã xử lý thế nào, nhóm có đổi ý gì không)*

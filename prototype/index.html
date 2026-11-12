@@ -33,7 +33,9 @@ button,input{font:inherit;color:inherit}
 
 /* Annotation numbers */
 .n{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:#fff;font:600 11px/1 var(--sans);margin-right:5px;vertical-align:1px;flex:none}
-.hide-n .n{display:none}
+.hide-n .n,.hide-n .cost,.hide-n .cid{display:none}
+.cid{font:600 11px/1 var(--sans);color:var(--mut);margin-right:5px}
+.cost{font:600 11px/1 var(--sans);color:var(--bad);border:1px solid currentColor;border-radius:999px;padding:2px 6px;margin-right:6px;vertical-align:1px}
 
 /* Labels */
 .tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:2px 10px;border-radius:999px;white-space:nowrap;font-family:var(--sans);line-height:1.5}
@@ -56,6 +58,7 @@ button,input{font:inherit;color:inherit}
 .sent{cursor:pointer;border-radius:3px;transition:background .15s}
 .sent:hover{background:var(--ai)}
 .flag{background:linear-gradient(transparent 55%,var(--hl) 55%);text-decoration:underline wavy var(--bad) 1px;text-underline-offset:4px}
+.fixed{text-decoration:line-through;color:var(--mut)}
 .flash{outline:2px solid var(--accent);outline-offset:3px}
 .checkbtn{font:500 12px var(--sans);border:1px solid var(--accent);color:var(--accent);background:var(--surface);border-radius:999px;padding:1px 9px;margin-left:4px;cursor:pointer;vertical-align:1px}
 
@@ -86,7 +89,7 @@ button,input{font:inherit;color:inherit}
 .muted{color:var(--mut)}
 .report{border-top:1px solid var(--line);margin-top:10px;padding-top:8px}
 .composer{border-top:1px solid var(--line);padding:10px 14px 12px;background:var(--surface)}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;max-height:136px;overflow:auto} /* 13 tin mẫu: ~4 hàng, còn lại cuộn */
 .chip{font-size:12.5px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 11px;cursor:pointer}
 .chip[aria-pressed=true]{border-color:var(--accent);color:var(--accent);font-weight:500}
 .composer input{width:100%;border:1px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--bg)}
@@ -170,10 +173,19 @@ dialog label{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin-t
     <div class="chat" id="chat" aria-live="polite"></div>
     <div class="composer">
       <div class="chips">
-        <button class="chip" data-act="case" data-case="c3">Độ lệch chuẩn luôn nhỏ hơn phương sai?</button>
-        <button class="chip" data-act="case" data-case="c7">Giải hộ câu b bài 3</button>
-        <button class="chip" data-act="case" data-case="c2">Excel dùng hàm gì?</button>
-        <button class="chip" data-act="case" data-case="c12">Giải thích bài 2</button>
+        <button class="chip" data-act="case" data-case="c1"><span class="cid" aria-hidden="true">#1</span>Slide 12 nói gì?</button>
+        <button class="chip" data-act="case" data-case="c2"><span class="cid" aria-hidden="true">#2</span>Excel dùng hàm gì?</button>
+        <button class="chip" data-act="case" data-case="c3"><span class="cost" aria-hidden="true">Case đắt #3</span>Độ lệch chuẩn luôn nhỏ hơn phương sai?</button>
+        <button class="chip" data-act="case" data-case="c4"><span class="cid" aria-hidden="true">#4</span>Cái độ lệch ấy là gì?</button>
+        <button class="chip" data-act="case" data-case="c5"><span class="cid" aria-hidden="true">#5</span>Hạn nộp và hàm Excel</button>
+        <button class="chip" data-act="case" data-case="c6"><span class="cid" aria-hidden="true">#6</span>Em ra 15.25 và 11.5, đúng chưa?</button>
+        <button class="chip" data-act="case" data-case="c7"><span class="cost" aria-hidden="true">Case đắt #7</span>Giải hộ câu b bài 3</button>
+        <button class="chip" data-act="case" data-case="c8"><span class="cid" aria-hidden="true">#8</span>p-value là gì?</button>
+        <button class="chip" data-act="case" data-case="c9"><span class="cid" aria-hidden="true">#9</span>Em hỏi TA được không?</button>
+        <button class="chip" data-act="case" data-case="c10"><span class="cid" aria-hidden="true">#10</span>Em dốt quá, không hợp ngành này</button>
+        <button class="chip" data-act="case" data-case="c11"><span class="cid" aria-hidden="true">#11</span>Bỏ số 45 cho dễ tính?</button>
+        <button class="chip" data-act="case" data-case="c12"><span class="cid" aria-hidden="true">#12</span>Giải thích bài 2</button>
+        <button class="chip" data-act="case" data-case="c13"><span class="cid" aria-hidden="true">#13</span>Chia n hay n−1?</button>
       </div>
       <input disabled placeholder="Prototype: chọn một tin mẫu ở trên" aria-label="Ô nhập tin nhắn">
     </div>
@@ -238,6 +250,7 @@ const RES={
 };
 const chat=$('#chat');
 const sent={}; // phiếu học viên trong phiên demo đã gửi TA
+const FIX=$('#d1text').textContent; // bản đính chính TA duyệt
 
 function bubble(cls,html){
   const d=document.createElement('div');d.className=cls;d.innerHTML=html;chat.append(d);
@@ -252,13 +265,16 @@ const again=act=>`<div class="actions"><button class="btn" data-act="${act}">${N
 const HANDOFF={
   s33:'Đã gửi câu §3.3 cho TA. TA trả lời từ 08:00 ngày 13/11.',
   excel:'Đã hỏi TA nên dùng hàm nào. TA trả lời từ 08:00 ngày 13/11.',
-  b3b:'Đã gửi phiếu cho TA. TA trả lời từ 08:00 ngày 13/11.'
+  b3b:'Đã gửi phiếu cho TA. TA trả lời từ 08:00 ngày 13/11.',
+  n1:'Đã hỏi TA khoá dùng cách nào. TA trả lời từ 08:00 ngày 13/11.',
+  ta:'Đã gửi cho TA. TA trả lời từ 08:00 ngày 13/11.'
 };
-const handoff=k=>`<div class="handoff" data-key="${k}"></div>`;
+// k = nhóm trong hàng chờ TA, m = phiếu (MINE) của tin đang demo
+const handoff=(k,m=k)=>`<div class="handoff" data-key="${k}" data-m="${m}"></div>`;
 function runHandoff(el){
   if(sent[el.dataset.key]){handed(el);return}
   el.innerHTML='<span class="muted">Đang gửi cho TA…</span>';
-  setTimeout(()=>{sent[el.dataset.key]=true;renderTA();handed(el)},600);
+  setTimeout(()=>{sent[el.dataset.key]=el.dataset.m;renderTA();handed(el)},600);
 }
 function handed(el){el.innerHTML=`<span>${N(4)}${HANDOFF[el.dataset.key]}</span><button class="linkbtn" data-act="undo">Rút lại</button>`}
 
@@ -272,10 +288,102 @@ function flagS33(){
   if(s.dataset.checked)return;
   s.classList.add('flag');s.insertAdjacentHTML('afterend',' '+RES.bad);s.dataset.checked=1;
 }
+/* Sau khi TA đăng: gạch câu sai trong tài liệu, hiện bản đính chính */
+function fixS33(){
+  const s=$('#s33bad');
+  while(s.nextSibling)s.nextSibling.remove(); // bỏ nhãn/nút đã chèn sau câu (câu này là con cuối của §3.3)
+  s.className='fixed';s.removeAttribute('tabindex');s.dataset.checked=1;
+  s.insertAdjacentHTML('afterend',` <span class="tag t-ok">TA đã đính chính</span><blockquote class="quote ok">${FIX}<cite>FAQ do TA đăng cho cả lớp</cite></blockquote>`);
+}
+/* Trích lướt qua §3.3 (#1, #4): câu cuối gắn cờ, hoặc đưa bản đính chính nếu TA đã đăng */
+function s33Note(m){
+  if(G.s33.done) return `<p>Câu cuối của ${src('s33bad','§3.3')} đã được TA đính chính <span class="tag t-ok">TA đã đính chính</span></p>
+    <blockquote class="quote ok">${FIX}<cite>FAQ do TA đăng</cite></blockquote>`;
+  flagS33();
+  return `<p>${N(2)}Riêng câu cuối của ${src('s33bad','§3.3')} thì bạn khoan ghi vào bài <span class="tag t-bad">Câu cần xem lại</span></p>
+    <blockquote class="quote bad">Vì là căn bậc hai, độ lệch chuẩn luôn nhỏ hơn phương sai.<cite>Tài liệu §3.3</cite></blockquote>
+    <div class="outside"><span class="tag t-out">Không nằm trong tài liệu</span><p>Phản ví dụ: phương sai 0,25 thì độ lệch chuẩn là 0,5, lớn hơn phương sai.</p></div>
+    ${handoff('s33',m)}`;
+}
+const EXCEL=`<div class="outside">${N(1)}<span class="tag t-out">Không nằm trong tài liệu</span>
+      <p>Theo Microsoft Support, Excel có hai hàm:</p>
+      <ul><li><b>STDEV.S</b>: dữ liệu là một mẫu, chia cho n−1.</li><li><b>STDEV.P</b>: dữ liệu là cả tổng thể, chia cho n.</li></ul>
+      <p>Hai hàm cho kết quả khác nhau trên cùng một dãy số.</p></div>
+    <p>Khoá chưa quy định dùng hàm nào, nên mình không chọn thay bạn.</p>`;
+const DEADLINE='hạn 23:59 ngày 13/11 <span class="srcplain">Trang khoá học</span>';
 
 const CASES={
+  c1(){
+    me('Slide 12 nói gì về độ lệch chuẩn ạ?');
+    ai(`<p>Tài liệu buổi 3 không có slide đánh số, chỉ chia theo mục từ §3.1 tới §3.5. Phần độ lệch chuẩn nằm ở ${src('sec33','§3.3')}:</p>
+    <blockquote class="quote ok">Độ lệch chuẩn là căn bậc hai của phương sai, có cùng đơn vị với dữ liệu.<cite>Tài liệu §3.3</cite></blockquote>
+    ${s33Note('s33_1')}`);
+  },
+  c4(){
+    me('Cái độ lệch ấy là gì ạ, em đọc không hiểu.');
+    ai(`<p>${N(3)}Tài liệu có hai chỗ nói về “lệch”. Bạn hỏi chỗ nào?</p>
+    <div class="quick"><button class="btn" data-act="b4" data-v="sd">Độ lệch chuẩn (§3.3)</button>
+    <button class="btn" data-act="b4" data-v="skew">Dữ liệu lệch (§3.2)</button></div>`);
+  },
+  c5(){
+    me('Hạn nộp bài 3 là khi nào ạ? Với cả tính độ lệch chuẩn bằng Excel thì dùng hàm gì?');
+    ai(`<p>Bạn hỏi hai việc, mình trả lời lần lượt.</p>
+    <p><b>Hạn nộp Bài 3:</b> 23:59 ngày 13/11/2026 <span class="srcplain">Trang khoá học</span></p>
+    <p><b>Hàm Excel:</b> tài liệu buổi 3 không nói hàm Excel nào.</p>
+    ${EXCEL}
+    ${handoff('excel','excel5')}`);
+  },
+  c6(){
+    me('Bài 3 em ra TB 15.25, trung vị 11.5, đúng chưa ạ? mai nộp rồi');
+    ai(`<p>${N(1)}${RES.lock}</p>
+    <p>Bài 3 đang mở (${DEADLINE}) nên mình không xác nhận đáp số, dù đúng hay sai. Bạn nào hỏi câu này cũng nhận đúng câu trả lời này.</p>
+    <p>Cách tự kiểm: trung bình có nằm giữa giá trị nhỏ nhất và lớn nhất không? Bạn đã sắp xếp dãy trước khi tìm trung vị chưa?</p>`);
+  },
+  c8(){
+    me('p-value là gì ạ, em đọc trước buổi 7 mà không hiểu');
+    ai(`<p>${N(1)}<span class="tag t-neu">Buổi chưa học</span></p>
+    <p>p-value học ở buổi 7 “Kiểm định giả thuyết và p-value” <span class="srcplain">Trang khoá học</span>. Buổi này chưa mở nên chưa có tài liệu để mình dựa vào. Mình không giảng trước, để khỏi khác cách giảng viên sẽ dạy.</p>
+    <p>Khi buổi 7 mở, bạn hỏi lại thì mình giảng kèm trích tài liệu.</p>`);
+  },
+  c9(){
+    me('Em hỏi TA được không ạ?');
+    ai(`<p>${N(1)}Giờ TA trực là 08:00–22:00 <span class="srcplain">Trang khoá học</span>, nên lúc này không có TA trực. Mình gửi tin của bạn cho TA.</p>
+    ${handoff('ta')}
+    <p class="muted">Trong lúc chờ, bạn vẫn hỏi mình được. Mình trả lời dựa trên tài liệu.</p>`);
+  },
+  c10(){
+    me('Em dốt quá, học mãi không hiểu trung vị, chắc em không hợp ngành này');
+    ai(`<p>Học mãi chưa hiểu thì nản thật. Mình đi lại từng bước trong ${src('sec32','§3.2')} nhé.</p>
+    <blockquote class="quote ok">Giá trị đứng giữa khi sắp xếp dữ liệu tăng dần.<cite>Tài liệu §3.2</cite></blockquote>
+    <div class="outside"><span class="tag t-out">Không nằm trong tài liệu</span>
+      <p>Ví dụ mình tự đặt: dãy 7, 3, 5. Sắp xếp tăng dần được 3, 5, 7. Giá trị đứng giữa là <b>5</b>, đó là trung vị.</p></div>
+    <p>Hiểu bước này rồi thì sang trường hợp số giá trị là chẵn, cũng ở ${src('sec32','§3.2')}.</p>`);
+  },
+  c11(){
+    me('Bài 3 có số 45, em bỏ đi cho dễ tính được không?');
+    ai(`<p>${N(1)}<span class="tag t-lock">Bài đang mở: chỉ gợi ý bước đầu</span></p>
+    <p>Tài liệu có một câu cho đúng chuyện này, ở ${src('sec34','§3.4')}:</p>
+    <blockquote class="quote ok">Trước khi bỏ một giá trị ngoại lai, cần hỏi: đây là lỗi nhập liệu hay là dữ liệu thật?<cite>Tài liệu §3.4</cite></blockquote>
+    <p>Bạn tự trả lời câu hỏi đó cho giá trị bạn đang nghĩ tới. Bỏ hay giữ là quyết định của bạn trong bài. Bài 3 đang mở nên mình không kết luận thay bạn.</p>`);
+  },
+  c13(){
+    me('Phương sai chia cho n hay n−1 ạ? Em thấy trên mạng mỗi chỗ một kiểu');
+    ai(`<p>${src('sec33','§3.3')} nói phương sai đo mức độ phân tán quanh trung bình, nhưng không nói chia cho n hay n−1.</p>
+    <div class="outside">${N(1)}<span class="tag t-out">Không nằm trong tài liệu</span>
+      <p>Theo OpenStax <i>Introductory Statistics</i>:</p>
+      <ul><li>Chia cho <b>n</b> khi dữ liệu là cả tổng thể.</li><li>Chia cho <b>n−1</b> khi dữ liệu là một mẫu.</li></ul>
+      <p>Hai cách cho kết quả khác nhau trên cùng một dãy số.</p></div>
+    <p>Khoá chưa quy định dùng cách nào, nên mình không chọn thay bạn.</p>
+    ${handoff('n1')}`);
+  },
   c3(){
     me('Độ lệch chuẩn luôn nhỏ hơn phương sai đúng không ạ, em ghi vào bài');
+    if(G.s33.done){
+      ai(`<p><span class="tag t-ok">TA đã đính chính</span></p>
+      <p>Câu này trong ${src('s33bad','§3.3')} đã được TA đính chính cho cả lớp. Bạn ghi theo bản đính chính:</p>
+      <blockquote class="quote ok">${FIX}<cite>FAQ do TA đăng</cite></blockquote>`);
+      return;
+    }
     flagS33();
     ai(`<p>${N(2)}<span class="tag t-bad">Câu cần xem lại</span></p>
     <p>Câu này có trong tài liệu ${src('s33bad','§3.3')}, nhưng mình thấy nó cần xem lại. Bạn khoan ghi vào bài.</p>
@@ -298,11 +406,7 @@ const CASES={
   c2(){
     me('Tính độ lệch chuẩn bằng Excel thì dùng hàm gì ạ?');
     ai(`<p>Tài liệu buổi 3 không nói hàm Excel nào.</p>
-    <div class="outside">${N(1)}<span class="tag t-out">Không nằm trong tài liệu</span>
-      <p>Theo Microsoft Support, Excel có hai hàm:</p>
-      <ul><li><b>STDEV.S</b>: dữ liệu là một mẫu, chia cho n−1.</li><li><b>STDEV.P</b>: dữ liệu là cả tổng thể, chia cho n.</li></ul>
-      <p>Hai hàm cho kết quả khác nhau trên cùng một dãy số.</p></div>
-    <p>Khoá chưa quy định dùng hàm nào, nên mình không chọn thay bạn.</p>
+    ${EXCEL}
     ${handoff('excel')}`);
   },
   c12(){
@@ -322,22 +426,32 @@ const G={
   b3b:{title:'Bài 3 câu b',tag:['t-neu','Hỏi lại sau gợi ý'],base:3,
     tickets:[{t:'21:47',q:'Câu b viết thế nào ạ, em đọc gợi ý rồi vẫn chưa hiểu',said:'Trỏ §3.1, §3.2, §3.4; hỏi lại kẹt ở bước nào',muc:'Bài 3(b), §3.1–§3.2'}]},
   excel:{title:'Hàm Excel cho độ lệch chuẩn',tag:['t-diff','Khoá chưa quy định'],base:1,
-    tickets:[{t:'20:30',q:'STDEV hay STDEV.P ạ?',said:'Nêu STDEV.S và STDEV.P theo Microsoft Support',muc:'Không nằm trong tài liệu'}]}
+    tickets:[{t:'20:30',q:'STDEV hay STDEV.P ạ?',said:'Nêu STDEV.S và STDEV.P theo Microsoft Support',muc:'Không nằm trong tài liệu'}]},
+  // base 0: chỉ hiện khi tin đang demo gửi phiếu
+  n1:{title:'Phương sai chia n hay n−1',tag:['t-diff','Khoá chưa quy định'],base:0,tickets:[]},
+  ta:{title:'Muốn hỏi trực tiếp TA',tag:['t-neu','Chưa nói câu hỏi'],base:0,tickets:[]}
 };
 const MINE={
   s33:{q:'Độ lệch chuẩn luôn nhỏ hơn phương sai đúng không ạ, em ghi vào bài',said:'Gắn “câu cần xem lại”, đưa phản ví dụ 0,25 → 0,5, khuyên chưa ghi vào bài',muc:'§3.3'},
   b3b:{q:'Giải hộ em câu b bài 3 với, em không biết viết gì',said:'Trỏ §3.1, §3.2, §3.4; hỏi lại kẹt ở đâu; câu hỏi dẫn dắt về “lương điển hình”',muc:'Bài 3(b), §3.1–§3.2'},
-  excel:{q:'Tính độ lệch chuẩn bằng Excel thì dùng hàm gì ạ?',said:'Nêu STDEV.S và STDEV.P (Microsoft Support), nói khoá chưa quy định',muc:'Không nằm trong tài liệu'}
+  excel:{q:'Tính độ lệch chuẩn bằng Excel thì dùng hàm gì ạ?',said:'Nêu STDEV.S và STDEV.P (Microsoft Support), nói khoá chưa quy định',muc:'Không nằm trong tài liệu'},
+  s33_1:{q:'Slide 12 nói gì về độ lệch chuẩn ạ?',said:'Nói tài liệu không có slide đánh số; trích §3.3, gắn “câu cần xem lại” cho câu cuối',muc:'§3.3'},
+  s33_4:{q:'Cái độ lệch ấy là gì ạ, em đọc không hiểu. (chọn: độ lệch chuẩn)',said:'Hỏi lại hai nghĩa; trích định nghĩa §3.3, gắn “câu cần xem lại” cho câu cuối',muc:'§3.3'},
+  excel5:{q:'Hạn nộp bài 3 là khi nào ạ? Với cả tính độ lệch chuẩn bằng Excel thì dùng hàm gì?',said:'Trả lời hạn nộp (Trang khoá học); nêu STDEV.S và STDEV.P, nói khoá chưa quy định',muc:'Không nằm trong tài liệu'},
+  n1:{q:'Phương sai chia cho n hay n−1 ạ? Em thấy trên mạng mỗi chỗ một kiểu',said:'Nói §3.3 không quy định; nêu cả hai cách (OpenStax); không gắn cờ §3.3',muc:'§3.3, Không nằm trong tài liệu'},
+  ta:{q:'Em hỏi TA được không ạ?',said:'Báo giờ TA 08:00–22:00 (Trang khoá học), gửi phiếu',muc:'Chưa rõ'}
 };
 let cur='s33';
 function renderTA(){
   const count=k=>G[k].base+(sent[k]?1:0);
-  $('#groups').innerHTML=Object.keys(G).map(k=>`<button class="group ${k===cur?'on':''}" data-act="group" data-g="${k}">
+  const keys=Object.keys(G).filter(k=>count(k));
+  if(!keys.includes(cur))cur='s33';
+  $('#groups').innerHTML=keys.map(k=>`<button class="group ${k===cur?'on':''}" data-act="group" data-g="${k}">
     <span class="gt">${G[k].title}</span><span class="tag ${G[k].tag[0]}">${G[k].tag[1]}</span><span class="cnt">${count(k)} học viên</span></button>`).join('');
-  const list=[...(sent[cur]?[{...MINE[cur],t:'22:40',mine:1}]:[]),...G[cur].tickets];
-  $('#tickets').innerHTML=`<h3>${G[cur].title}</h3>`+list.map(t=>`<dl class="ticket">${t.mine?'<p class="new">Vừa gửi từ phiên học viên đang demo</p>':''}
+  const list=[...(sent[cur]?[{...MINE[sent[cur]],t:'22:40',mine:1}]:[]),...G[cur].tickets];
+  $('#tickets').innerHTML=`<h3>${G[cur].title}</h3>${G[cur].done?`<p style="margin:0 0 6px"><span class="tag t-ok">Đã trả lời ${count(cur)} học viên bằng đính chính</span></p>`:''}`+list.map(t=>`<dl class="ticket">${t.mine?'<p class="new">Vừa gửi từ phiên học viên đang demo</p>':''}
     <dt>Lúc</dt><dd>${t.t}</dd><dt>Câu hỏi gốc</dt><dd>${t.q}</dd><dt>Trợ lý đã nói</dt><dd>${t.said}</dd><dt>Mục</dt><dd>${t.muc}</dd></dl>`).join('');
-  $('#tabTA').textContent=`Hàng chờ TA (${Object.keys(G).reduce((a,k)=>a+count(k),0)})`;
+  $('#tabTA').textContent=`Hàng chờ TA (${Object.keys(G).reduce((a,k)=>a+(G[k].done?0:count(k)),0)})`;
 }
 
 /* Học viên tự đối chiếu một câu trong tài liệu */
@@ -370,7 +484,7 @@ document.addEventListener('click',e=>{
       <div class="outside"><span class="tag t-out">Không nằm trong tài liệu</span>
         <p>√0,04 = 0,2, mà 0,2 lớn hơn 0,04. Còn √9 = 3, mà 3 nhỏ hơn 9.</p></div>
       <p>Vì vậy độ lệch chuẩn không phải lúc nào cũng nhỏ hơn phương sai, còn tuỳ phương sai lớn hay nhỏ hơn 1.</p>
-      ${sent.s33?'<p>TA đã có phiếu về câu này và sẽ trả lời bạn từ 08:00 ngày 13/11.</p>':handoff('s33')}`);break;
+      ${G.s33.done?'<p>TA đã đính chính câu này cho cả lớp, xem lại §3.3.</p>':sent.s33?'<p>TA đã có phiếu về câu này và sẽ trả lời bạn từ 08:00 ngày 13/11.</p>':handoff('s33')}`);break;
     case 'report':
       b.disabled=true;
       b.closest('.ai').insertAdjacentHTML('beforeend',`<div class="report"><p>Sai ở chỗ nào?</p><div class="actions">${
@@ -385,6 +499,18 @@ document.addEventListener('click',e=>{
         <li>Trung vị: sắp xếp dãy tăng dần rồi đếm số giá trị. Nếu số giá trị là chẵn, lấy trung bình cộng của hai giá trị đứng giữa ${src('sec32','§3.2')}.</li></ul>
         <p>Tự kiểm: trung bình có nằm giữa giá trị nhỏ nhất và lớn nhất không? Bạn đã sắp xếp dãy trước khi tìm trung vị chưa?</p>${again('again7')}`);
       else ai(`<p>Đọc lại ${src('sec31','§3.1')} và ${src('sec32','§3.2')}, để ý câu nói về giá trị ngoại lai trong mỗi mục, và ${src('sec34','§3.4')}.</p>${again('again7')}`);
+      break;
+    case 'b4':
+      b.closest('.quick').querySelectorAll('button').forEach(x=>x.disabled=true);
+      me(b.textContent);
+      if(b.dataset.v==='sd') ai(`<p>Theo ${src('sec33','§3.3')}:</p>
+        <blockquote class="quote ok">Phương sai đo mức độ phân tán của dữ liệu quanh trung bình.<cite>Tài liệu §3.3</cite></blockquote>
+        <blockquote class="quote ok">Độ lệch chuẩn là căn bậc hai của phương sai, có cùng đơn vị với dữ liệu.<cite>Tài liệu §3.3</cite></blockquote>
+        ${s33Note('s33_4')}`);
+      else ai(`<p>${src('sec32','§3.2')} có nhắc tới dữ liệu lệch nhưng không định nghĩa:</p>
+        <blockquote class="quote ok">Trung vị ít bị ảnh hưởng bởi giá trị ngoại lai, nên thường dùng cho dữ liệu lệch như thu nhập hay giá nhà.<cite>Tài liệu §3.2</cite></blockquote>
+        <div class="outside">${N(1)}<span class="tag t-out">Không nằm trong tài liệu</span>
+          <p>Theo OpenStax <i>Introductory Statistics</i>, dữ liệu lệch là dữ liệu không cân đối hai bên: phần lớn giá trị dồn về một phía, phía còn lại kéo dài với vài giá trị rất lớn hoặc rất nhỏ.</p></div>`);
       break;
     case 'again7':
       b.disabled=true;me('Mình vẫn chưa hiểu');
@@ -403,7 +529,11 @@ document.addEventListener('click',e=>{
       $$('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));break}
     case 'group':cur=b.dataset.g;renderTA();break;
     case 'faq':$('#dlgtext').textContent=$('#d1text').textContent;$('#confirmed').checked=false;$('#post').disabled=true;$('#dlg').showModal();break;
-    case 'post':$('#dlg').close();$('#d1act').innerHTML='<span class="tag t-ok">Đã đăng cho cả lớp</span>';break;
+    case 'post':
+      $('#dlg').close();$('#d1act').innerHTML='<span class="tag t-ok">Đã đăng cho cả lớp</span>';
+      G.s33.done=true;G.s33.tag=['t-ok','Đã đăng đính chính'];renderTA();fixS33();
+      $$('.handoff[data-key=s33]').forEach(el=>el.innerHTML='<span>TA đã đính chính câu này cho cả lớp.</span><button class="linkbtn" data-act="goto" data-go="s33bad">Xem §3.3</button>');
+      break;
     case 'close':$('#dlg').close();break;
   }
 });
